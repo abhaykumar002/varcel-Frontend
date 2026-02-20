@@ -5,8 +5,6 @@ import chatbot_image from '../images/chatbot_image.png';
 import { FaPaperPlane, FaComments, FaTimes, FaRobot } from "react-icons/fa";
 
 const Chatbot = () => {
-  const URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=";
-  const API_KEY = "AIzaSyBgb-IOlPhLP36wat6ViTRkp-aRq9Ku6bU";
 
   const initialPrompt = `You are a helpful and friendly chatbot for a doctor's office appointment system. 
 Your primary goal is to book appointments for patients. Your task is to ask the user for the following information in a clear and conversational manner, one question at a time:
