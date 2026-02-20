@@ -48,31 +48,40 @@ Suggest him the Doctor as per the issues.
     sendToAI([{ role: "user", text: initialPrompt }]);
   }, []);
 
-  const sendToAI = (history) => {
+  const sendToAI = async (history) => {
     setLoading(true);
 
-    const payload = {
-      contents: [
-        {
-          parts: history.map(item => ({
-            text: `${item.role === "user" ? "user" : "bot"} : ${item.text}`
-          }))
-        }
-      ]
-    };
+    // Filter out the initial system prompt if the backend doesn't need it or handles context differently
+    // However, keeping the history intact is usually good.
 
-    axios.post(`${URL}${API_KEY}`, payload)
-      .then(res => {
-        const botReply = res.data.candidates[0].content.parts[0].text;
-        const updatedHistory = [...history, { role: "bot", text: botReply }];
-        setChatHistory(updatedHistory);
-        setLoading(false);
-        setQuestion("");
-      })
-      .catch(err => {
-        console.error("Error from API:", err);
-        setLoading(false);
+    // We only send the history array. The formatting logic has moved to the backend.
+
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ history })
       });
+
+      const res = await response.json();
+
+      if (res.success) {
+        const updatedHistory = [...history, { role: "bot", text: res.reply }];
+        setChatHistory(updatedHistory);
+      } else {
+        // Handle error cleanly
+        const updatedHistory = [...history, { role: "bot", text: "Something went wrong. Please try again." }];
+        setChatHistory(updatedHistory);
+      }
+
+    } catch (err) {
+      console.error("Error from Backend:", err);
+      const updatedHistory = [...history, { role: "bot", text: "Network error. Please try again." }];
+      setChatHistory(updatedHistory);
+    } finally {
+      setLoading(false);
+      setQuestion("");
+    }
   };
 
   const handleSubmit = (e) => {
